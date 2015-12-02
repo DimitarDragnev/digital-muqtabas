@@ -77,6 +77,10 @@
                 <xsl:copy-of select="$vNav"/>
                 <!-- the button design is not yet done -->
                 <xsl:copy-of select="$vButtons"/>
+                <!-- add the form to toggle the display of facsimiles  -->
+                <form id="select-facs"> <h2>Control the display of facsimiles: </h2> <input type="radio" name="facs" value="off"
+                    checked="checked"/> none <input type="radio" name="facs" value="local"/> local <input type="radio" name="facs"
+                    value="online"/> online </form>
                 <div id="tei_wrapper">
                     <xsl:apply-templates/>
                 </div>
@@ -296,11 +300,50 @@
             <script src="{$jqueryBlockUIJS}" type="text/javascript"/>
             <script src="{$teibpJS}" type="text/javascript"/>
             <script type="text/javascript">
-				$(document).ready(function() {
-					$("html > head > title").text($("TEI > teiHeader > fileDesc > titleStmt > title:first").text());
-					$.unblockUI();	
-				});
-			</script>
+	$(document).ready(function() {
+	   $("html > head > title").text($("TEI > teiHeader > fileDesc > titleStmt > title:first").text());
+	   $.unblockUI();	
+	});
+	</script>
+            <script type="text/javascript">
+                $(document).ready(function(){
+                    // deal with facsimiles
+                    var radioValue = $('#select-facs input[name="facs"]:checked').val();        
+                    //alert(radioValue); 
+                    if (radioValue == 'off'){
+                        $('.cFacsLocal').hide();
+                        $('.cFacsOnline').hide();
+                        }
+                    else {
+                        if (radioValue =='local'){
+                             $('.cFacsLocal').show();
+                             $('.cFacsOnline').hide();
+                        }
+                        else{
+                            $('.cFacsLocal').hide();
+                            $('.cFacsOnline').show();
+                        }
+                    }
+                    $('#select-facs input[name="facs"]').on('change', function() {
+                    var radioValue = $('#select-facs input[name="facs"]:checked').val();        
+                    //alert(radioValue); 
+                    if (radioValue == 'off'){
+                         $('.cFacsLocal').hide();
+                         $('.cFacsOnline').hide();
+                    }
+                    else {
+                        if (radioValue =='local'){
+                             $('.cFacsLocal').show();
+                             $('.cFacsOnline').hide();
+                        }
+                        else{
+                            $('.cFacsLocal').hide();
+                            $('.cFacsOnline').show();
+                        }
+                    }
+                    });
+                }); 
+            </script>
             <xsl:call-template name="tagUsage2style"/>
             <xsl:call-template name="rendition2style"/>
             <title><!-- don't leave empty. --></title>
@@ -417,13 +460,13 @@
         <xsl:param name="n"/>
         <xsl:param name="facs"/>
         <xsl:param name="id"/>
+        <xsl:variable name="vMimeType" select="'image/jpeg'"/>
         <!-- dealing with pointers instead of full URLs in @facs -->
-        <xsl:variable name="vFacs">
+        <!--<xsl:variable name="vFacs">
             <xsl:choose>
                 <xsl:when test="starts-with($facs, '#')">
                     <xsl:variable name="vFacsID" select="substring-after($facs, '#')"/>
-                    <xsl:variable name="vMimeType" select="'image/jpeg'"/>
-                    <!-- here could be an option to select the image hosted on HathiTrust -->
+                    <!-\- here could be an option to select the image hosted on HathiTrust -\->
                     <xsl:choose>
                         <xsl:when test="$pgOnlineFacs = true()">
                             <xsl:choose>
@@ -451,7 +494,7 @@
                     <xsl:value-of select="$facs"/>
                 </xsl:otherwise>
             </xsl:choose>
-        </xsl:variable>
+        </xsl:variable>-->
         <span class="-teibp-pageNum">
             <!-- <xsl:call-template name="atts"/> -->
             <xsl:copy-of select="$pbNote"/>
@@ -459,16 +502,43 @@
             <xsl:text> </xsl:text>
         </span>
         <span class="-teibp-pbFacs">
-            <a class="gallery-facs" rel="prettyPhoto[gallery1]">
-                <xsl:attribute name="onclick">
+            <!-- change to include all facsimiles -->
+            <!--<a class="gallery-facs" rel="prettyPhoto[gallery1]">-->
+
+            <!--<xsl:attribute name="onclick">
                     <xsl:value-of select="concat('showFacs(', $apos, $n, $apos, ',', $apos, $vFacs, $apos, ',', $apos, $id, $apos, ')')"/>
-                </xsl:attribute>
-                <img alt="{$altTextPbFacs}" class="-teibp-thumbnail">
+                </xsl:attribute>-->
+            <!--<img alt="{$altTextPbFacs}" class="-teibp-thumbnail">
                     <xsl:attribute name="src">
                         <xsl:value-of select="$vFacs"/>
                     </xsl:attribute>
-                </img>
-            </a>
+                </img>-->
+            <xsl:variable name="vFacsID" select="substring-after($facs, '#')"/>
+            <xsl:for-each select="ancestor::tei:TEI/tei:facsimile/tei:surface[@xml:id = $vFacsID]/tei:graphic[@mimeType = $vMimeType]">
+                <a class="gallery-facs" rel="prettyPhoto[gallery1]">
+                    <xsl:attribute name="onclick">
+                        <xsl:value-of select="concat('showFacs(', $apos, $n, $apos, ',', $apos, @url, $apos, ',', $apos, $id, $apos, ')')"/>
+                    </xsl:attribute>
+                    <img alt="{$altTextPbFacs}">
+                        <xsl:attribute name="class">
+                            <xsl:text>-teibp-thumbnail</xsl:text>
+                            <xsl:choose>
+                                <xsl:when test="starts-with(@url, 'http')">
+                                    <xsl:text> cFacsOnline</xsl:text>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:text> cFacsLocal</xsl:text>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>
+                        <!-- link to the image files -->
+                        <xsl:attribute name="src">
+                            <xsl:value-of select="@url"/>
+                        </xsl:attribute>
+                    </img>
+                </a>
+            </xsl:for-each>
+            <!--</a>-->
         </span>
     </xsl:template>
     <xsl:template match="tei:pb[@facs]">
@@ -609,10 +679,10 @@
             </xsl:if>
         </li>
     </xsl:template>
-    
+
     <!-- omit all nodes that are not explicitly dealt with -->
     <xsl:template match="tei:head" mode="mToc">
-       <xsl:apply-templates mode="mToc"/>
+        <xsl:apply-templates mode="mToc"/>
     </xsl:template>
     <xsl:template match="tei:note" mode="mToc"/>
     <xsl:template match="tei:lb | tei:cb" mode="mToc">
@@ -621,7 +691,7 @@
     <xsl:template match="tei:lb | tei:cb">
         <xsl:text> </xsl:text>
     </xsl:template>
-    
+
     <!-- create the anchors in the text -->
     <xsl:template match="tei:div">
         <xsl:copy>
@@ -652,7 +722,9 @@
             </xsl:call-template>
             <xsl:choose>
                 <xsl:when test="parent::node()/@xml:id">
-                    <a href="#{parent::node()/@xml:id}" class="cLinkSelf"><xsl:apply-templates select="node()"/></a>
+                    <a href="#{parent::node()/@xml:id}" class="cLinkSelf">
+                        <xsl:apply-templates select="node()"/>
+                    </a>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:apply-templates select="node()"/>
@@ -664,13 +736,13 @@
     </xsl:template>
 
     <!-- omit line breaks in heads: all breaks have been omitted -->
-  <!--  <xsl:template match="tei:head/tei:lb | tei:head/tei:cb">
+    <!--  <xsl:template match="tei:head/tei:lb | tei:head/tei:cb">
         <xsl:text> </xsl:text>
     </xsl:template>
     -->
     <!-- provide paragraph count independent of css implementation -->
     <xsl:template match="tei:p">
-        <xsl:variable name="vCount" select="count(preceding::tei:p[ancestor::tei:body])+1"/>
+        <xsl:variable name="vCount" select="count(preceding::tei:p[ancestor::tei:body]) + 1"/>
         <xsl:copy>
             <xsl:apply-templates select="@*"/>
             <xsl:call-template name="templHtmlAttrLang">
@@ -679,7 +751,9 @@
             <span class="cId cNumber">
                 <xsl:choose>
                     <xsl:when test="@xml:id">
-                        <a href="#{@xml:id}" class="cLinkSelf cNumber"><xsl:value-of select="$vCount"/></a>
+                        <a href="#{@xml:id}" class="cLinkSelf cNumber">
+                            <xsl:value-of select="$vCount"/>
+                        </a>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="$vCount"/>
@@ -714,7 +788,7 @@
     </xsl:template>
     <!-- the file's id -->
     <xsl:variable name="vFileId" select="tei:TEI/@xml:id"/>
-    <xsl:variable name="vFileIssueNo" select="substring-after($vFileId,'-i_')"/>
+    <xsl:variable name="vFileIssueNo" select="substring-after($vFileId, '-i_')"/>
     <!-- Sidebar buttons -->
     <xsl:variable name="vButtons">
         <!-- link to Github -->
@@ -731,7 +805,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:value-of
-                                        select="concat('https://github.com/tillgrallert/digital-muqtabas/blob/master/xml/',$vFileId,'.TEIP5.xml')"
+                                        select="concat('https://github.com/tillgrallert/digital-muqtabas/blob/master/xml/', $vFileId, '.TEIP5.xml')"
                                     />
                                 </xsl:otherwise>
                             </xsl:choose>
@@ -740,7 +814,7 @@
                         <xsl:text>TEI source on GitHub</xsl:text>
                     </a>
                 </li>
-               
+
             </ul>
         </div>
         <!-- links to previous and next issues -->
