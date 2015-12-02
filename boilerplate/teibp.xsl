@@ -77,11 +77,11 @@
                 <xsl:copy-of select="$vNav"/>
                 <!-- the button design is not yet done -->
                 <xsl:copy-of select="$vButtons"/>
-                <!-- add the form to toggle the display of facsimiles  -->
-                <form id="select-facs"> <h2>Control the display of facsimiles: </h2> <input type="radio" name="facs" value="off"
-                    checked="checked"/> none <input type="radio" name="facs" value="local"/> local <input type="radio" name="facs"
-                    value="online"/> online </form>
                 <div id="tei_wrapper">
+                    <!-- add the form to toggle the display of facsimiles  -->
+                    <div id="select-facs"> <h2>Control the display of facsimiles: </h2> <input type="radio" name="facs" value="off"
+                        checked="checked"/> none <input type="radio" name="facs" value="local"/> local <input type="radio" name="facs"
+                            value="online"/> online </div>
                     <xsl:apply-templates/>
                 </div>
                 <xsl:copy-of select="$vNotes"/>
@@ -299,51 +299,8 @@
             <script src="{$jqueryJS}" type="text/javascript"/>
             <script src="{$jqueryBlockUIJS}" type="text/javascript"/>
             <script src="{$teibpJS}" type="text/javascript"/>
-            <script type="text/javascript">
-	$(document).ready(function() {
-	   $("html > head > title").text($("TEI > teiHeader > fileDesc > titleStmt > title:first").text());
-	   $.unblockUI();	
-	});
-	</script>
-            <script type="text/javascript">
-                $(document).ready(function(){
-                    // deal with facsimiles
-                    var radioValue = $('#select-facs input[name="facs"]:checked').val();        
-                    //alert(radioValue); 
-                    if (radioValue == 'off'){
-                        $('.cFacsLocal').hide();
-                        $('.cFacsOnline').hide();
-                        }
-                    else {
-                        if (radioValue =='local'){
-                             $('.cFacsLocal').show();
-                             $('.cFacsOnline').hide();
-                        }
-                        else{
-                            $('.cFacsLocal').hide();
-                            $('.cFacsOnline').show();
-                        }
-                    }
-                    $('#select-facs input[name="facs"]').on('change', function() {
-                    var radioValue = $('#select-facs input[name="facs"]:checked').val();        
-                    //alert(radioValue); 
-                    if (radioValue == 'off'){
-                         $('.cFacsLocal').hide();
-                         $('.cFacsOnline').hide();
-                    }
-                    else {
-                        if (radioValue =='local'){
-                             $('.cFacsLocal').show();
-                             $('.cFacsOnline').hide();
-                        }
-                        else{
-                            $('.cFacsLocal').hide();
-                            $('.cFacsOnline').show();
-                        }
-                    }
-                    });
-                }); 
-            </script>
+            <script src="../js/teibp-toggleFacs.js" type="text/javascript"/>
+            
             <xsl:call-template name="tagUsage2style"/>
             <xsl:call-template name="rendition2style"/>
             <title><!-- don't leave empty. --></title>
