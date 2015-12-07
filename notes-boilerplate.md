@@ -4,6 +4,10 @@ author: Till Grallert
 date: 2015-12-01 17:44:26
 ---
 
+# TO DO
+
+- remove the BibTeX links from subheaders of `<div type="bill">`
+
 # Select which facsimile to display
 
 This can be donw with javascript, jQuery, and a radio box HTML form. Somewhere at the top of the page, a form should be embedded:
@@ -136,6 +140,14 @@ h1.sticky {
 }
 ~~~
 
+
+Links:
+
+- [Change navigation active state on scroll](http://codepen.io/supersarap/pen/EsAyn): jQuery waypoint
+- [fixed sticky](https://github.com/filamentgroup/fixed-sticky)
+- [mozilla position css](https://developer.mozilla.org/en-US/docs/Web/CSS/position)
+- [demo css sticky](http://html5-demos.appspot.com/static/css/sticky.html)
+- [simple on scroll animated header jquery](https://medium.com/web-design-tutorials/simple-on-scroll-animated-header-jquery-4694b254609e#.el9xja7ua)
 
 # Unicode symbols for navigation
 
