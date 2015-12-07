@@ -60,6 +60,8 @@
     <xsl:param name="theme.terminal" select="concat($filePrefix, '/css/terminal.css')"/>
     <!-- select whether or not you want to display online facsimiles -->
     <xsl:param name="pgOnlineFacs" select="true()"/>
+    <!-- variables -->
+    <xsl:variable name="vMimeType" select="'image/jpeg'"/>
     <xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
         <xd:desc>
             <xd:p>Match document root and create and html5 wrapper for the TEI document, which is copied, with some modification, into the
@@ -78,10 +80,6 @@
                 <!-- the button design is not yet done -->
                 <xsl:copy-of select="$vButtons"/>
                 <div id="tei_wrapper">
-                    <!-- add the form to toggle the display of facsimiles  -->
-                    <div id="select-facs"> <h2>Control the display of facsimiles: </h2> <input type="radio" name="facs" value="off"
-                        checked="checked"/> none <input type="radio" name="facs" value="local"/> local <input type="radio" name="facs"
-                            value="online"/> online </div>
                     <xsl:apply-templates/>
                 </div>
                 <xsl:copy-of select="$vNotes"/>
@@ -300,6 +298,45 @@
             <script src="{$jqueryBlockUIJS}" type="text/javascript"/>
             <script src="{$teibpJS}" type="text/javascript"/>
             <script src="../js/teibp-toggleFacs.js" type="text/javascript"/>
+            <script type="text/javascript">
+                $(document).ready(function(){
+                // deal with facsimiles
+                var radioValue = $('#select-facs input[name="facs"]:checked').val();        
+                //alert(radioValue); 
+                if (radioValue == 'off'){
+                $('.cFacsLocal').hide();
+                $('.cFacsOnline').hide();
+                }
+                else {
+                if (radioValue =='local'){
+                $('.cFacsLocal').show();
+                $('.cFacsOnline').hide();
+                }
+                else{
+                $('.cFacsLocal').hide();
+                $('.cFacsOnline').show();
+                }
+                }
+                $('#select-facs input[name="facs"]').on('change', function() {
+                var radioValue = $('#select-facs input[name="facs"]:checked').val();        
+                //alert(radioValue); 
+                if (radioValue == 'off'){
+                $('.cFacsLocal').hide();
+                $('.cFacsOnline').hide();
+                }
+                else {
+                if (radioValue =='local'){
+                $('.cFacsLocal').show();
+                $('.cFacsOnline').hide();
+                }
+                else{
+                $('.cFacsLocal').hide();
+                $('.cFacsOnline').show();
+                }
+                }
+                });
+                }); 
+            </script>
             
             <xsl:call-template name="tagUsage2style"/>
             <xsl:call-template name="rendition2style"/>
@@ -413,11 +450,10 @@
 		  })();
 		</script>
     </xsl:template>
-    <xsl:template name="pb-handler">
+    <xsl:template name="templPbHandler">
         <xsl:param name="n"/>
         <xsl:param name="facs"/>
         <xsl:param name="id"/>
-        <xsl:variable name="vMimeType" select="'image/jpeg'"/>
         <!-- dealing with pointers instead of full URLs in @facs -->
         <!--<xsl:variable name="vFacs">
             <xsl:choose>
@@ -507,7 +543,7 @@
                 <!-- add @lang="en" to ensure correct ltr rendering -->
                 <span class="-teibp-pb" lang="en">
                     <xsl:call-template name="addID"/>
-                    <xsl:call-template name="pb-handler">
+                    <xsl:call-template name="templPbHandler">
                         <xsl:with-param name="n" select="@n"/>
                         <xsl:with-param name="facs" select="@facs"/>
                         <xsl:with-param name="id">
@@ -728,6 +764,8 @@
     <!-- do something with notes -->
     <xsl:variable name="vNotes">
         <div id="teibp_notes">
+            <!-- this div should have a head as well -->
+            <head lang="en">Notes</head>
             <xsl:apply-templates select="/descendant::tei:body/descendant::tei:note" mode="mNotes"/>
         </div>
     </xsl:variable>
@@ -746,6 +784,48 @@
         <a href="#fn-{generate-id()}" id="fn-mark-{generate-id()}" class="cFnMark cContent">
             <xsl:value-of select="count(preceding::tei:note[ancestor::tei:body]) + 1"/>
         </a>
+    </xsl:template>
+    
+    <!-- facsimiles -->
+    
+    <xsl:template match="tei:facsimile">
+        <xsl:copy>
+            <xsl:apply-templates select="@*"/>
+            <!-- add the form to toggle the display of facsimiles  -->
+            <div id="select-facs" lang="en"> <h2>Control the display of facsimiles: </h2> <input type="radio" name="facs" value="off"
+                checked="checked"/> none <input type="radio" name="facs" value="local"/> local <input type="radio" name="facs"
+                    value="online"/> online </div>
+                <xsl:apply-templates/>
+        </xsl:copy>
+    </xsl:template>
+    <xsl:template match="tei:surface">
+        <xsl:copy>
+            <xsl:apply-templates select="@*"/>
+        <xsl:for-each select="child::tei:graphic[@mimeType = $vMimeType]">
+            <!--<a class="gallery-facs" rel="prettyPhoto[gallery1]">
+                <xsl:attribute name="onclick">
+                    <xsl:value-of select="concat('showFacs(', $apos, $n, $apos, ',', $apos, @url, $apos, ',', $apos, $id, $apos, ')')"/>
+                </xsl:attribute>-->
+                <img alt="{$altTextPbFacs}">
+                    <xsl:attribute name="class">
+                        <xsl:text>cFacs</xsl:text>
+                        <xsl:choose>
+                            <xsl:when test="starts-with(@url, 'http')">
+                                <xsl:text> cFacsOnline</xsl:text>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:text> cFacsLocal</xsl:text>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:attribute>
+                    <!-- link to the image files -->
+                    <xsl:attribute name="src">
+                        <xsl:value-of select="@url"/>
+                    </xsl:attribute>
+                </img>
+            <!--</a>-->
+        </xsl:for-each>
+        </xsl:copy>
     </xsl:template>
     <!-- the file's id -->
     <xsl:variable name="vFileId" select="tei:TEI/@xml:id"/>

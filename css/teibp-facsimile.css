@@ -1,0 +1,24 @@
+/* Move the text right and the facsimile left */
+/*TEI > text, TEI > facsimile {
+	width: 46%;
+}*/
+TEI > text {
+	width: 500px;
+	float: right;
+}
+TEI > facsimile {
+	width: 500px;
+	float: left;
+}
+
+facsimile surface {
+	display:block;
+	width: inherit;
+}
+
+facsimile img {
+	width:500px;
+}
+facsimile img.cFacsOnline {
+	display: none;
+}
