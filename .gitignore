@@ -1,1 +1,7 @@
 .DS_Store
+images/
+.jpg
+.jpeg
+.tiff
+.tif
+.gitignore
